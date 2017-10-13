@@ -66,3 +66,31 @@ done
 #    echo "$i"
 #    # or do whatever with individual element of the array
 # done
+
+
+
+
+
+# mysql  -h "bima-mentor.coic6imdwwxx.ap-south-1.rds.amazonaws.com" -P 6603 -u"root" -p"Hellobima" 
+
+# mysql -h host -u root -proot -e "show databases;";
+
+
+# user_name - unique - using count
+# user_password - same as user_name
+# user_mobile - starting with 1, append count
+# user_password_token - append count
+# user_password_token_expiry - set time in future ?
+
+# id, user_name, user_first_name, user_last_name, user_password, user_mobile, user_email, user_password_token, user_password_token_expiry, user_status, is_mobile_verified, is_email_verified, user_retry_count, created_by, updated_by, created_date, updated_date, user_availability
+
+# DB_HOST='bima-mentor.coic6imdwwxx.ap-south-1.rds.amazonaws.com'
+# DB_PORT=6603
+# DB_USER='root'
+# DB_PASSWORD='Hellobima'
+
+# mysql -h'localhost' -P3306 -u'root' -p'Bima1' -e'use allocator;insert into bima_user (user_name, user_first_name, user_last_name, user_password, user_mobile, user_email, user_password_token, user_password_token_expiry, created_by, created_date) values ("un_1507881366", "user_first_name", "user_last_name", "un_1507881366",1200068927,"un_1507881366@junk.kom", "un_1507881366_token", now() + INTERVAL 1 DAY, 10109, NOW());'
+
+# USE_DB_QRY='use allocator;'
+
+# CUR_TIME_SEC_CMD='date +%s'
