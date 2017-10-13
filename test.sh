@@ -2,7 +2,8 @@
 #local root Bima1
 
 
-COUNT=10
+
+COUNT=1
 STR=101
 END=$(($STR+$COUNT-1))
 
