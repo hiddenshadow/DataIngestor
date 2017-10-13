@@ -29,7 +29,9 @@ LAST_NAMES_LEN=${#LAST_NAMES[@]}
 
 CREATED_DATE='NOW()'
 CREATED_BY=10109
-USER_PASSWORD_TOKEN_EXPIRY='now() + INTERVAL 1 DAY'
+# USER_PASSWORD_TOKEN_EXPIRY='now() + INTERVAL 1 DAY'
+# USER_PASSWORD_TOKEN='r5SPC2M0xdboIsm8jPJANA=='
+USER_PASSWORD='r5SPC2M0xdboIsm8jPJANA=='
 
 VALUES=''
 
@@ -45,12 +47,11 @@ do
 	USER_NAME='un_'$CUR_TIME_SEC'_'$i
 	USER_FIRST_NAME=${FIRST_NAMES[$fn]}
 	USER_LAST_NAME=${LAST_NAMES[$lna]}
-	USER_PASSWORD=$USER_NAME
+	
 	USER_MOBILE=$USER_MOBILE
 	USER_EMAIL=$USER_NAME'@junk.kom'
-	USER_PASSWORD_TOKEN=$USER_NAME'_token'
 
-  	CUR_VALUE='("'$USER_NAME'", "'$USER_FIRST_NAME'", "'$USER_LAST_NAME'", "'$USER_PASSWORD'",'$USER_MOBILE',"'$USER_EMAIL'", "'$USER_PASSWORD_TOKEN'", '$USER_PASSWORD_TOKEN_EXPIRY', '$CREATED_BY', '$CREATED_DATE')'
+  	CUR_VALUE='("'$USER_NAME'","'$USER_FIRST_NAME'","'$USER_LAST_NAME'","'$USER_PASSWORD'",'$USER_MOBILE',"'$USER_EMAIL'",'$CREATED_BY','$CREATED_DATE')'
 	
 	VALUES=$VALUES''$CUR_VALUE
 
@@ -60,14 +61,14 @@ do
 	fi
 done
 
-QUERY='insert into '$DB_DATABASE'.bima_user (user_name, user_first_name, user_last_name, user_password, user_mobile, user_email, user_password_token, user_password_token_expiry, created_by, created_date) values '
+QUERY='insert into '$DB_DATABASE'.bima_user (user_name, user_first_name, user_last_name, user_password, user_mobile, user_email, created_by, created_date) values '
 
 QUERY=$QUERY' '$VALUES';'
 
 SSH_CMD="mysql -h'"$DB_HOST"' -P"$DB_PORT" -u'"$DB_USER"' -p'"$DB_PASSWORD"' -e'"$QUERY"'"
 # SSH_CMD=$QUERY
 
-# echo 'Executing query command : '$SSH_CMD;
+echo 'Executing query command : '$SSH_CMD;
 # echo ''
 eval nohup $SSH_CMD &> a.out
 

@@ -4,9 +4,9 @@
 # For valid data max should be same as max user_id.
 # As there is only single insert query to db, max count is 1200, limited by length of the argument passed to nohup.
 # COUNT=1200
-COUNT=1107
+COUNT=1
 
-STR=7373834758347583
+STR=7373834758347593
 END=$(($STR+$COUNT-1))
 
 DB_HOST='localhost'
@@ -15,10 +15,31 @@ DB_USER='root'
 DB_PASSWORD='Bima1'
 DB_DATABASE='allocator'
 
-# DB_HOST='bima-mentor.coic6imdwwxx.ap-south-1.rds.amazonaws.com'
-# DB_PORT=6603
-# DB_USER='root'
-# DB_PASSWORD='Hellobima'
+DB_HOST='bima-mentor.coic6imdwwxx.ap-south-1.rds.amazonaws.com'
+DB_PORT=6603
+DB_USER='root'
+DB_PASSWORD='Hellobima'
+
+#############
+echo 'Read values:'
+
+QUERY='select min(id),max(id)  from allocator.customer_meta_data;'
+
+SSH_CMD='mysql -h"'$DB_HOST'" -P'$DB_PORT' -u"'$DB_USER'" -p"'$DB_PASSWORD'" -s -N -e"'$QUERY'"'
+
+echo 'Executing query command : '$SSH_CMD;
+echo ''
+
+eval $SSH_CMD > a.out
+
+MIN=`cat a.out | tail -1 | awk '{ print $1}'`
+MAX=`cat a.out | tail -1 | awk '{ print $2}'`
+
+echo 'MIN: '$MIN', MAX: '$MAX
+
+# STR=$MIN
+# END=$MAX
+#############
 
 VALUES=''
 
@@ -73,4 +94,4 @@ SSH_CMD="mysql -h'"$DB_HOST"' -P"$DB_PORT" -u'"$DB_USER"' -p'"$DB_PASSWORD"' -e'
 # echo ''
 eval nohup $SSH_CMD &> a.out
 
-echo 'Done inserting Meta data for '$COUNT' Customers.'
+echo 'Done inserting Meta data for '$(($END-$STR))' Customers.'

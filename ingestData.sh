@@ -20,6 +20,27 @@ DB_DATABASE='allocator'
 # DB_USER='root'
 # DB_PASSWORD='Hellobima'
 
+#############
+echo 'Read values:'
+
+QUERY='select min(id),max(id)  from allocator.customer_meta_data;'
+
+SSH_CMD='mysql -h"'$DB_HOST'" -P'$DB_PORT' -u"'$DB_USER'" -p"'$DB_PASSWORD'" -s -N -e"'$QUERY'"'
+
+echo 'Executing query command : '$SSH_CMD;
+echo ''
+
+eval $SSH_CMD > a.out
+
+MIN=`cat a.out | tail -1 | awk '{ print $1}'`
+MAX=`cat a.out | tail -1 | awk '{ print $2}'`
+
+echo 'MIN: '$MIN', MAX: '$MAX
+
+STR=$MIN
+END=$MAX
+#############
+
 VALUES=''
 
 CREATED_DATE='NOW()'
@@ -29,7 +50,7 @@ AGE_MIN=1;
 AGE_MAX=111;
 
 
-declare -a GENDERS=("FEMALE" "MALE")
+declare -a GENDERS=["FEMALE" "MALE"]
 
 for i in $(seq $STR $END)
 do

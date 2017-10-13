@@ -1,12 +1,11 @@
 #!/bin/bash
 
-# Need to ignore error for entry with duplicate status.
 # For valid data max should be same as max user_id.
 # As there is only single insert query to db, max count is 1000, limited by length of the argument passed to nohup.
 # COUNT=1000
-COUNT=510
+COUNT=1
 
-STR=30
+STR=1
 END=$(($STR+$COUNT-1))
 
 DB_HOST='localhost'
@@ -25,9 +24,9 @@ VALUES=''
 CREATED_DATE='NOW()'
 CREATED_BY=10109
 CID_MIN=1; 
-CID_MAX=11;
+CID_MAX=5;
 ROLE_ID_MIN=1;
-ROLE_ID_MAX=3;
+ROLE_ID_MAX=4;
 STATUS_MIN=1;
 STATUS_MAX=1;
 
@@ -54,7 +53,7 @@ done
 
 # insert into allocator.bima_user_role_permission (user_id, partner_country_id, role_id, status, created_by, created_date) value (1501, 11111, 1, 1, 10109, NOW());
 
-QUERY='insert into '$DB_DATABASE'.bima_user_role_permission (user_id, partner_country_id, role_id, status, created_by, created_date) values '
+QUERY='insert ignore into '$DB_DATABASE'.bima_user_role_permission (user_id, partner_country_id, role_id, status, created_by, created_date) values '
 
 QUERY=$QUERY' '$VALUES';'
 

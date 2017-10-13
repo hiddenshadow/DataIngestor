@@ -1,6 +1,25 @@
 #!/bin/bash
 #local root Bima1
 
+DB_HOST='localhost'
+DB_PORT=3306
+DB_USER='root'
+DB_PASSWORD='Bima1'
+DB_DATABASE='allocator'
+
+QUERY='select min(id),max(id)  from allocator.customer_meta_data;'
+
+SSH_CMD='mysql -h"'$DB_HOST'" -P'$DB_PORT' -u"'$DB_USER'" -p"'$DB_PASSWORD'" -s -N -e"'$QUERY'"'
+
+echo 'Executing query command : '$SSH_CMD;
+echo ''
+
+eval $SSH_CMD > a.out
+
+MIN=`cat a.out | tail -1 | awk '{ print $1}'`
+MAX=`cat a.out | tail -1 | awk '{ print $2}'`
+
+echo 'MIN: '$MIN', MAX: '$MAX
 
 
 COUNT=1
@@ -8,11 +27,10 @@ STR=101
 END=$(($STR+$COUNT-1))
 
 
-# i=2
-
-# if [ $i -lt 3 ]; then
-# 	echo 'asd'
-# fi
+i=2
+if [ $i -lt 3 ]; then
+	echo 'asd'
+fi
 
 
 # CUR_TIME_SEC=$(date +%s)
@@ -20,8 +38,8 @@ END=$(($STR+$COUNT-1))
 
 # echo "$CUR_TIME_SEC"
 
-# FIRST_NAMES=('Rahul' 'Raina' 'Dhoni')
-declare -a FIRST_NAMES=("redhat" "debian" "gentoo")
+# FIRST_NAMES=['redhat' 'debian' 'gentoo' ]
+FIRST_NAMES="redhat debian gentoo"
 FIRST_NAMES_LEN=${#FIRST_NAMES[@]}
 
 echo 'FIRST_NAMES_LEN: '$FIRST_NAMES_LEN
@@ -35,6 +53,7 @@ do
 	echo 'f:'$f
 
 	echo ${FIRST_NAMES[$f]}
+
 done
 
 # # CUR_TIME_SEC=$(date +%s)
@@ -93,5 +112,4 @@ done
 # mysql -h'localhost' -P3306 -u'root' -p'Bima1' -e'use allocator;insert into bima_user (user_name, user_first_name, user_last_name, user_password, user_mobile, user_email, user_password_token, user_password_token_expiry, created_by, created_date) values ("un_1507881366", "user_first_name", "user_last_name", "un_1507881366",1200068927,"un_1507881366@junk.kom", "un_1507881366_token", now() + INTERVAL 1 DAY, 10109, NOW());'
 
 # USE_DB_QRY='use allocator;'
-
 # CUR_TIME_SEC_CMD='date +%s'
