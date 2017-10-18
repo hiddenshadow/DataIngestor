@@ -1,6 +1,29 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-COUNT=1
+# https://kvz.io/blog/2013/11/21/bash-best-practices/
+
+# README:
+# 1. Script takes count as input. Inserts those many number of users in total in bima_user table.
+# 2. For each user inserted, a role is also inserted in bima_user_role_permission table.
+# 3. For each user a customer entry is also made in bima_customer.
+# 4. And for each customer, Gender & Age entries are made in customer meta data customer_meta_data table.
+
+
+set -o errexit
+set -o pipefail
+set -o nounset
+# set -o xtrace
+
+if [ "$#" -ne 1 ]; then
+    echo "Illegal number of parameters. Pass number of users to be created as first parameter, as"
+    echo '	/usr/bin/env bash ingestAllData.sh [<COUNT>]'
+    echo 'Example usage:'
+    echo '/usr/bin/env bash ingestAllData.sh 3'
+    exit 1
+fi
+
+
+COUNT=$1
 
 STR=1
 END=$(($STR+$COUNT-1))
@@ -63,9 +86,21 @@ do
 
 	CUR_TIME_SEC=$(date +%s)
 	USER_NAME='un_'$CUR_TIME_SEC'_'$i
-	USER_FIRST_NAME=${FIRST_NAMES[$fn]}
 	USER_LAST_NAME=${LAST_NAMES[$lna]}
 	USER_EMAIL=$USER_NAME'@junk.kom'
+
+	# Taking male names in case i is odd.
+	usr_rem=$(( $i % 2 ))
+
+	if [ $usr_rem -eq 0 ]
+	then
+		USER_FIRST_NAME=${FIRST_NAMES_FEM[$fn]}
+		USER_GENDER="FEMALE"
+	else
+		USER_FIRST_NAME=${FIRST_NAMES[$fn]}
+		USER_GENDER="MALE"
+	fi
+
 
   	CUR_VALUE='("'$USER_NAME'","'$USER_FIRST_NAME'","'$USER_LAST_NAME'","'$USER_PASSWORD'",'$USER_MOBILE',"'$USER_EMAIL'",'$CREATED_BY','$CREATED_DATE')'
 	
@@ -107,6 +142,8 @@ do
 		DEPENDANT_COUNT=$(shuf -i $DEPENDANT_COUNT_MIN-$DEPENDANT_COUNT_MAX -n 1)
 		DEP_LAST_NAME=$USER_LAST_NAME
 
+		DEPENDANT_COUNT=$(( $DEPENDANT_COUNT + 1 )) # Adding customer entry corresponding to User.
+
 		echo '		DEPENDANT_COUNT: '$DEPENDANT_COUNT
 		for d in $(seq $DEPENDANT_COUNT_MIN $DEPENDANT_COUNT)
 		do
@@ -127,6 +164,14 @@ do
 				DEP_FIRST_NAME=${FIRST_NAMES[$fn]}
 				GENDER_VAL="MALE"
 			fi
+
+			# Using User data for creating customer entry for first entry.
+			if [ $d -eq 1 ]
+			then
+				DEP_FIRST_NAME=$USER_FIRST_NAME
+				GENDER_VAL=$USER_GENDER
+			fi
+
 
 			# (user_id, first_name, last_name, msisdn, status, created_by, created_date)
 			CUR_INSERT_DEP_VALUE='('$LAST_USER_ID', "'$DEP_FIRST_NAME'", "'$DEP_LAST_NAME'", '$MSISDN', '$DEP_STATUS', '$CREATED_BY','$CREATED_DATE')'
@@ -192,17 +237,15 @@ do
 					echo 'Error inserting meta data, Age for '$LAST_DEPENDANT_ID
 					break
 				fi
-
 			fi
 
 		done
 
 	else
-		echo 'Error inserting user!'
-		break
+		echo 'Error inserting user '$i
 	fi
+
 	echo ''
 done
 
-
-# Should each user also have an entry correspondingly in customer table?
+exit 0;
