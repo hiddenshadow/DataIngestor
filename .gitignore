@@ -1,2 +1,4 @@
 *.out
 test_copy.sh
+
+bashHandleTest.sh
