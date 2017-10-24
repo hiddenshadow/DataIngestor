@@ -38,6 +38,11 @@ DEP_STATUS_MAX=1;
 AGE_MIN=1;
 AGE_MAX=111;
 VALUES=''
+SEARCH_KEY_TYPE=1
+SUBSCRIPTION_STATUS=1
+POLICY_ID=1
+COV_POL_STATUS=1
+
 
 SSH_CMD="mysql -h'"$DB_HOST"' -P"$DB_PORT" -u'"$DB_USER"' -p'"$DB_PASSWORD"' -s -N -e'"
 
@@ -53,6 +58,10 @@ INSERT_DEPENDANT_QUERY='insert into '$DB_DATABASE'.bima_customer (user_id, first
 
 INSERT_DEP_META_QUERY='insert into '$DB_DATABASE'.customer_meta_data (customer_id, meta_key, meta_value, created_by, created_date) values '
 
+INS_CUST_SUBSCRIPTION_QRY='insert into '$DB_DATABASE'.customer_subscription (customer_id, purchaser_user_id, search_key, search_key_type, status, created_by, created_date) values '
+
+INS_POL_COV_QRY='insert into '$DB_DATABASE'.customer_coverage_policy (policy_id,customer_id,purchaser_user_id,subscription_id,status,created_by,created_date) values'
+
 BEGIN_TXN='BEGIN work;';
 END_TXN="commit;"
 
@@ -60,6 +69,9 @@ LAST_USER_ID_QRY='select @userId := LAST_INSERT_ID();'
 
 LAST_CUST_ID_QRY='SELECT @custId := LAST_INSERT_ID();'
 CUST_ID='@custId'
+
+LAST_SUBSCRIPTION_ID_QRY='SELECT @subsId := LAST_INSERT_ID();'
+SUBS_ID='@subsId'
 
 for i in $(seq $STR $END)
 do
@@ -90,7 +102,7 @@ do
 
 	CUR_TXN=$SSH_CMD''$BEGIN_TXN''$CUR_USER_INSERT_QUERY''$CUR_INSERT_USER_ROLE''$END_TXN"  select @userId;'"
 
-	echo 'Executing query : '$CUR_TXN;
+	# echo 'Executing query : '$CUR_TXN;
 	eval $CUR_TXN &> a.out
 	cat a.out >> all.out
 
@@ -129,16 +141,8 @@ do
 			CUR_INSERT_DEP_VALUE='('$LAST_USER_ID', "'$DEP_FIRST_NAME'", "'$DEP_LAST_NAME'", '$MSISDN', '$DEP_STATUS', '$CREATED_BY','$CREATED_DATE')'
 			CUR_INSERT_DEPENDANT_QUERY=$INSERT_DEPENDANT_QUERY' '$CUR_INSERT_DEP_VALUE';'$LAST_CUST_ID_QRY
 			
-			# CUR_INSERT_DEPENDANT_QUERY=$SSH_CMD''$CUR_INSERT_DEPENDANT_QUERY"'"
-			# echo 'Executing query : '$CUR_INSERT_DEPENDANT_QUERY;
-			# eval $CUR_INSERT_DEPENDANT_QUERY &> a.out
-			# LAST_DEPENDANT_ID=`cat a.out | tail -1 | awk '{ print $1}'`
-			# echo '		LAST_DEPENDANT_ID: '$LAST_DEPENDANT_ID
-
-
 			CUR_META_VALUES=''
 
-			# CUSTOMER_ID=$LAST_DEPENDANT_ID
 		  	META_KEY="GENDER"
 		  	META_VALUE=$GENDER_VAL
 
@@ -146,37 +150,27 @@ do
 		  	CUR_META_VALUES='('$CUST_ID',"'$META_KEY'","'$META_VALUE'",'$CREATED_BY','$CREATED_DATE')'
 			CUR_INS_DEP_META_GENDER_QRY=$INSERT_DEP_META_QUERY' '$CUR_META_VALUES';'
 
-		  	# CUR_INS_DEP_META_QRY=$SSH_CMD''$CUR_INS_DEP_META_QRY"'"
-
-			# echo 'Executing query : '$CUR_INS_DEP_META_QRY;
-			# eval $CUR_INS_DEP_META_QRY &> a.out
-
-			# LAST_DEPENDANT_META_ID=`cat a.out | tail -1 | awk '{ print $1}'`
-			# echo '			Gender Meta data Id: '$LAST_DEPENDANT_META_ID
-
-			# if [ $LAST_DEPENDANT_META_ID -le 0 ]
-			# then
-			# 	echo 'Error inserting meta data Gender for '$LAST_DEPENDANT_ID
-			# 	break
-			# fi
-
-			# echo '			Adding meta data, Age for customer: '$LAST_DEPENDANT_ID
 			META_KEY="AGE"
 		  	META_VALUE=$(shuf -i $AGE_MIN-$AGE_MAX -n 1)
 
 		  	CUR_META_VALUES='('$CUST_ID',"'$META_KEY'","'$META_VALUE'",'$CREATED_BY','$CREATED_DATE')'
 			CUR_INS_DEP_META_AGE_QRY=$INSERT_DEP_META_QUERY' '$CUR_META_VALUES';'
 
-		  	# CUR_INS_DEP_META_QRY=$SSH_CMD''$CUR_INS_DEP_META_QRY"'"
-			# echo 'Executing query : '$CUR_INS_DEP_META_QRY;
-			# eval $CUR_INS_DEP_META_QRY &> a.out
-			# LAST_DEPENDANT_META_ID=`cat a.out | tail -1 | awk '{ print $1}'`
-			# echo '			Age Meta data Id: '$LAST_DEPENDANT_META_ID
+			SEARCH_KEY='b'$CUR_TIME_SEC''$i''$d
+			SUBSCRIPTION_ID=$SEARCH_KEY
 
-			CUST_TXN=$BEGIN_TXN''$CUR_INSERT_DEPENDANT_QUERY''$CUR_INS_DEP_META_GENDER_QRY''$CUR_INS_DEP_META_AGE_QRY''$END_TXN'SELECT '$CUST_ID";'"
+			# (customer_id, purchaser_user_id, search_key, search_key_type, status, created_by, created_date)
+			INS_SUBSCRIPTION_VAL='('$CUST_ID','$LAST_USER_ID',"'$SEARCH_KEY'",'$SEARCH_KEY_TYPE','$SUBSCRIPTION_STATUS','$CREATED_BY','$CREATED_DATE')'
+			CUR_INS_SUBSCRIPTION=$INS_CUST_SUBSCRIPTION_QRY' '$INS_SUBSCRIPTION_VAL';'
+
+			# (policy_id,customer_id,purchaser_user_id,subscription_id,status,created_by,created_date)
+			INS_COV_POL_VAL='('$POLICY_ID','$CUST_ID','$LAST_USER_ID',"'$SUBSCRIPTION_ID'",'$COV_POL_STATUS','$CREATED_BY','$CREATED_DATE')'
+			CUR_COV_POL_QRY=$INS_POL_COV_QRY' '$INS_COV_POL_VAL';'
+
+			CUST_TXN=$BEGIN_TXN''$CUR_INSERT_DEPENDANT_QUERY''$CUR_INS_DEP_META_GENDER_QRY''$CUR_INS_DEP_META_AGE_QRY''$CUR_INS_SUBSCRIPTION''$CUR_COV_POL_QRY''$END_TXN'SELECT '$CUST_ID";'"
 			CUST_TXN=$SSH_CMD''$CUST_TXN
 
-			echo 'Executing query : '$CUST_TXN;
+			# echo 'Executing query : '$CUST_TXN;
 			eval $CUST_TXN &> a.out
 			cat a.out >> all.out
 		done
@@ -192,6 +186,8 @@ done
 # Should each user also have an entry correspondingly in customer table?
 # For each User, insert a customer and random number of dependants.
 # For each customer, insert a customer, customer meta data.
+# 'customer_coverage_policy'
+# 'customer_subscription'
 
 # Todo:
 # Enable sql logs.
